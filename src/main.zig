@@ -51,8 +51,8 @@ const keys = [_]Key{
     Key{ .mod = MOD,             .key = c.XK_c,      .fun = win_center,      .arg = Arg{ .i = 0 } },
     Key{ .mod = MOD|c.ShiftMask, .key = c.XK_space,  .fun = win_float,       .arg = Arg{ .i = 0 } },
 
-    Key{ .mod = MOD,             .key = c.XK_h,      .fun = incmaster,       .arg = Arg{ .i = -10 } },
-    Key{ .mod = MOD,             .key = c.XK_l,      .fun = incmaster,       .arg = Arg{ .i =  10 } },
+    Key{ .mod = MOD,             .key = c.XK_h,      .fun = incmaster,       .arg = Arg{ .i = -20 } },
+    Key{ .mod = MOD,             .key = c.XK_l,      .fun = incmaster,       .arg = Arg{ .i =  20 } },
 
     Key{ .mod = MOD,             .key = c.XK_Tab,    .fun = win_next,        .arg = Arg{ .i = 0 } },
     Key{ .mod = MOD|c.ShiftMask, .key = c.XK_Tab,    .fun = win_prev,        .arg = Arg{ .i = 0 } },
@@ -164,22 +164,13 @@ fn win_rotate_next(fuck: *Fuck, arg: Arg) !void {
 }
 
 fn incmaster(fuck: *Fuck, arg: Arg) !void {
-    // oh dear god, please forgive my utter foolishness.
-    // i wanted to do something as simple as master_w += arg.i
-    // but zig wouldn't let me do it with different integer types
-    // so i got frustrated. please forgive this foolish creature.
-    // i shall atone for my sins with my life.
-    const bruh = @as(u32, @intCast(if (arg.i < 0) (0-arg.i) else (arg.i)));
-    if (arg.i < 0) {
-        if (fuck.desktop[fuck.ws].master_w <= 100)
-            return;
-        fuck.desktop[fuck.ws].master_w -= bruh;
-    }
-    else {
-        if (fuck.desktop[fuck.ws].master_w >= fuck.screen_w - 200)
-            return;
-        fuck.desktop[fuck.ws].master_w += bruh;
-    }
+    // ... i think this is a big better than it was before, but still....
+    const too_small = (fuck.desktop[fuck.ws].master_w <= 100);
+    const too_big = (fuck.desktop[fuck.ws].master_w >= fuck.screen_w - 100);
+
+    if ((arg.i < 0 and too_small) or (arg.i > 0 and too_big)) return;
+    const mw = &fuck.desktop[fuck.ws].master_w;
+    mw.* = @as(u32, @intCast(@as(i32, @intCast(mw.*)) + arg.i));
     win_tile(fuck);
 }
 
@@ -206,7 +197,7 @@ fn win_center(fuck: *Fuck, arg: Arg) !void {
     if (cw.is_full or !cw.is_float) return;
 
     const x = @as(i32, @intCast((fuck.screen_w / 2) - (cw.w / 2)));
-    const y = @as(i32, @intCast((fuck.screen_h / 2) - (cw.h / 2)));
+    const y = @as(i32, @intCast(((fuck.screen_h+TOPGAP) / 2) - (cw.h / 2)));
 
     _ = c.XMoveResizeWindow(fuck.display, cw.window, x, y, cw.w, cw.h);
     try cw.get_size(fuck);
