@@ -6,8 +6,6 @@ pub const MOD = c.Mod4Mask;
 pub const TOPGAP = 18;
 pub const GAPSIZE = 6;
 pub const MODE = fuckwm.Mode.master_stack;
-// TODO: getenv for this
-pub const CONFIGPATH = "/home/ren/.config/fuckwm/fuckwmrc &";
 
 const term_cmd = [_][*c]const u8{ "kitty", 0 };
 const menu_cmd = [_][*c]const u8{ "dmenu_run", 0 };

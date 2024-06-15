@@ -120,7 +120,8 @@ fn input_grab(fuck: *fuckwm.Fuck) void {
     for (config.keys, 0..) |_, i| {
         code = c.XKeysymToKeycode(fuck.display, config.keys[i].key);
         if (code != 0) {
-            _ = c.XGrabKey(fuck.display, code, config.keys[i].mod, fuck.root, c.True, c.GrabModeAsync, c.GrabModeAsync);
+            _ = c.XGrabKey(fuck.display, code, config.keys[i].mod,
+                fuck.root, c.True, c.GrabModeAsync, c.GrabModeAsync);
         }
     }
 
@@ -160,8 +161,6 @@ pub fn main() !void {
     _ = c.XSelectInput(fuck.display, fuck.root, c.SubstructureRedirectMask);
     _ = c.XDefineCursor(fuck.display, fuck.root, c.XCreateFontCursor(fuck.display, 68));
     input_grab(&fuck);
-    // ...
-    _ = c.system(config.CONFIGPATH);
 
     while (true) {
         _ = c.XNextEvent(fuck.display, &ev);
