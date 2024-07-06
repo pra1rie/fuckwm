@@ -30,6 +30,7 @@ pub const keys = [_]func.Key{
     func.Key{ .mod = MOD|c.ShiftMask,   .key = c.XK_k,      .fun = func.win_rotate_next, .arg = func.Arg{ .i = 0 } },
 
     func.Key{ .mod = MOD|c.ShiftMask,   .key = c.XK_t,      .fun = func.tile_mode,       .arg = func.Arg{ .m = fuckwm.Mode.master_stack } },
+    func.Key{ .mod = MOD|c.ShiftMask,   .key = c.XK_b,      .fun = func.tile_mode,       .arg = func.Arg{ .m = fuckwm.Mode.bottom_stack } },
     func.Key{ .mod = MOD|c.ShiftMask,   .key = c.XK_m,      .fun = func.tile_mode,       .arg = func.Arg{ .m = fuckwm.Mode.monocle } },
     func.Key{ .mod = MOD|c.ShiftMask,   .key = c.XK_f,      .fun = func.tile_mode,       .arg = func.Arg{ .m = fuckwm.Mode.float } },
 

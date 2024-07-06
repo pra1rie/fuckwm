@@ -92,13 +92,24 @@ pub fn win_rotate_next(fuck: *fuckwm.Fuck, arg: Arg) !void {
     fuckwm.win_tile(fuck);
 }
 
-pub fn incmaster(fuck: *fuckwm.Fuck, arg: Arg) !void {
-    const too_small = (fuck.desktop[fuck.ws].master_w <= 100);
-    const too_big = (fuck.desktop[fuck.ws].master_w >= fuck.screen_w - 100);
+fn incmastersz(master_sz: u64, screen_sz: u64, i: i32) !u32 {
+    const too_small = (master_sz <= 100);
+    const too_big = (master_sz >= screen_sz - 100);
+    if ((i < 0 and too_small) or (i > 0 and too_big))
+        return fuckwm.FuckError.InvalidWindowSize;
+    return @as(u32, @intCast(@as(i32, @intCast(master_sz)) + i));
+}
 
-    if ((arg.i < 0 and too_small) or (arg.i > 0 and too_big)) return;
-    const mw = &fuck.desktop[fuck.ws].master_w;
-    mw.* = @as(u32, @intCast(@as(i32, @intCast(mw.*)) + arg.i));
+pub fn incmaster(fuck: *fuckwm.Fuck, arg: Arg) !void {
+    if (fuck.desktop[fuck.ws].mode == fuckwm.Mode.bottom_stack) {
+        const mh = &fuck.desktop[fuck.ws].master_h;
+        mh.* = try incmastersz(mh.*, fuck.screen_h, arg.i);
+    }
+    else {
+        const mw = &fuck.desktop[fuck.ws].master_w;
+        mw.* = try incmastersz(mw.*, fuck.screen_w, arg.i);
+    }
+
     fuckwm.win_tile(fuck);
 }
 

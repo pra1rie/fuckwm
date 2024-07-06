@@ -12,6 +12,7 @@ pub fn mod_clean(mask: u32) u32 {
 
 pub const Mode = enum {
     master_stack,
+    bottom_stack,
     monocle,
     float,
 };
@@ -21,6 +22,7 @@ pub const Desktop = struct {
     mode: Mode = config.MODE,
     last_mode: Mode = config.MODE,
     master_w: u32,
+    master_h: u32,
     cur: u64,
 };
 
@@ -56,6 +58,7 @@ pub const Fuck = struct {
             f.desktop[i] = Desktop{
                 .clients = ArrayList(Client).init(page_alloc),
                 .master_w = f.screen_w / 2,
+                .master_h = f.screen_h / 2,
                 .cur = 0,
             };
         }
@@ -140,8 +143,11 @@ pub fn win_tile(fuck: *Fuck) void {
     switch (mode) {
         Mode.monocle => tile_monocle(fuck, &ws),
         Mode.master_stack => tile_master_stack(fuck, &ws),
+        Mode.bottom_stack => tile_bottom_stack(fuck, &ws),
         else => {},
     }
+
+    tile_float(fuck, &ws);
 }
 
 fn tile_monocle(fuck: *Fuck, ws: *const Desktop) void {
@@ -153,8 +159,6 @@ fn tile_monocle(fuck: *Fuck, ws: *const Desktop) void {
                 fuck.screen_w - config.GAPSIZE * 2,
                 fuck.screen_h - config.TOPGAP - config.GAPSIZE * 2);
     }
-
-    tile_float(fuck, ws);
 }
 
 fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
@@ -197,8 +201,48 @@ fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
                 @as(u32, @intCast(h - config.GAPSIZE)));
         count += 1;
     }
+}
 
-    tile_float(fuck, ws);
+fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
+    const master_h = ws.master_h;
+    const stack_h = fuck.screen_h - master_h;
+    var sz: u32 = 0;
+    var master: u32 = 0;
+
+    for (ws.clients.items, 0..) |wn, i| {
+        if (!wn.is_float) {
+            if (master == 0 and ws.clients.items[master].is_float)
+                master = @as(u32, @intCast(i));
+            sz += 1;
+        }
+    }
+
+    // only one tiled client
+    if (ws.clients.items.len == 1 or sz <= 1) {
+        tile_monocle(fuck, ws);
+        return;
+    }
+
+    var wn = ws.clients.items[master];
+    _ = c.XMoveResizeWindow(fuck.display, wn.window,
+            config.GAPSIZE,
+            config.GAPSIZE + config.TOPGAP,
+            fuck.screen_w - config.GAPSIZE * 2,
+            @as(u32, @intCast(master_h - config.TOPGAP)));
+
+    var count: u32 = 0;
+    const w = (fuck.screen_w - config.GAPSIZE) / (sz-1);
+    for ((master+1)..ws.clients.items.len) |i| {
+        wn = ws.clients.items[i];
+        if (wn.is_float) continue;
+
+        _ = c.XMoveResizeWindow(fuck.display, wn.window,
+                @as(i32, @intCast(count * w + config.GAPSIZE)),
+                @as(i32, @intCast(master_h + config.GAPSIZE*2)),
+                @as(u32, @intCast(w - config.GAPSIZE)),
+                @as(u32, @intCast(stack_h - config.TOPGAP)));
+        count += 1;
+    }
 }
 
 fn tile_float(fuck: *Fuck, ws: *const Desktop) void {
