@@ -8,12 +8,15 @@ const func = @import("func.zig");
 
 fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     const wn = ev.*.xmap.window;
+    const ws = &fuck.desktop[fuck.ws];
     if (wn == c.None) return;
+    if (ws.clients.items.len != 0)
+        ws.clients.items[ws.cur].is_full = false;
 
     _ = c.XSelectInput(fuck.display, wn, c.StructureNotifyMask|c.EnterWindowMask);
     try fuckwm.win_add(fuck, wn);
     _ = c.XMapWindow(fuck.display, wn);
-    fuckwm.win_focus(fuck, fuck.desktop[fuck.ws].clients.items.len - 1);
+    fuckwm.win_focus(fuck, ws.clients.items.len - 1);
     try func.win_center(fuck, .{});
     fuckwm.win_tile(fuck);
 }

@@ -109,7 +109,6 @@ pub fn incmaster(fuck: *fuckwm.Fuck, arg: Arg) !void {
         const mw = &fuck.desktop[fuck.ws].master_w;
         mw.* = try incmastersz(mw.*, fuck.screen_w, arg.i);
     }
-
     fuckwm.win_tile(fuck);
 }
 
