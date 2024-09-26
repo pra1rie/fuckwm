@@ -1,12 +1,7 @@
 
-all: release
+all:
+	zig build --release=fast
 
-release:
-	zig build -Doptimize=ReleaseFast
-
-debug:
-	zig build -Doptimize=Debug
-
-install:
+install: all
 	install zig-out/bin/fuckwm /usr/local/bin/
 
