@@ -134,8 +134,8 @@ pub fn win_center(fuck: *fuckwm.Fuck, arg: Arg) !void {
     var cw = &ws.clients.items[ws.cur];
     if (cw.is_full or !cw.is_float) return;
 
-    cw.x = @as(i32, @intCast((fuck.screen_w / 2) - (cw.w / 2)));
-    cw.y = @as(i32, @intCast(((fuck.screen_h+config.TOP_GAP) / 2) - (cw.h / 2)));
+    cw.x = @as(i32, @intCast((fuck.screen_w / 2) - (cw.w / 2) - config.BORDER_SIZE));
+    cw.y = @as(i32, @intCast(((fuck.screen_h+config.TOP_GAP) / 2) - (cw.h / 2) - config.BORDER_SIZE));
 
     _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
     try cw.get_size(fuck);
