@@ -255,7 +255,7 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
                 @as(i32, @intCast(count * w + config.GAP_SIZE)),
                 @as(i32, @intCast(master_h + gap)),
                 @as(u32, @intCast(w - config.GAP_SIZE - config.BORDER_SIZE)),
-                @as(u32, @intCast(stack_h - config.TOP_GAP)));
+                @as(u32, @intCast(stack_h - config.GAP_SIZE - config.BORDER_SIZE - config.TOP_GAP)));
         count += 1;
     }
 }
