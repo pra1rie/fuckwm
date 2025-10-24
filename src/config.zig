@@ -3,9 +3,12 @@ const fuckwm = @import("fuckwm.zig");
 const func = @import("func.zig");
 
 pub const MOD = c.Mod4Mask;
-pub const TOPGAP = 18;
-pub const GAPSIZE = 6;
 pub const MODE = fuckwm.Mode.master_stack;
+pub const TOP_GAP = 24;
+pub const GAP_SIZE = 8;
+pub const BORDER_SIZE = 3;
+pub const BORDER_NORMAL = "#121212";
+pub const BORDER_SELECT = "#ff5faf";
 
 const term_cmd = [_][*c]const u8{ "kitty", 0 };
 const menu_cmd = [_][*c]const u8{ "dmenu_run", 0 };

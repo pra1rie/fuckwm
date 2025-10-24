@@ -37,6 +37,8 @@ pub const Fuck = struct {
     root: c.Window,
     mouse: c.XButtonEvent,
     hover_attr: c.XWindowAttributes,
+    border_normal: c.XColor,
+    border_select: c.XColor,
     screen_w: u32,
     screen_h: u32,
     desktop: [10]Desktop,
@@ -53,6 +55,10 @@ pub const Fuck = struct {
         f.root = @intCast(c.RootWindow(f.display, s));
         f.screen_w = @intCast(c.XDisplayWidth(f.display, s));
         f.screen_h = @intCast(c.XDisplayHeight(f.display, s));
+
+        _ = c.XAllocNamedColor(f.display, c.DefaultColormap(f.display, s), config.BORDER_NORMAL, &f.border_normal, &f.border_normal);
+        _ = c.XAllocNamedColor(f.display, c.DefaultColormap(f.display, s), config.BORDER_SELECT, &f.border_select, &f.border_select);
+
 
         for (0..10) |i| {
             f.desktop[i] = Desktop{
@@ -110,6 +116,12 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
     _ = c.XRaiseWindow(fuck.display, cc.window);
     fuck.desktop[fuck.ws].cur = client;
     win_tile(fuck);
+
+    var attr: c.XSetWindowAttributes = undefined;
+    for (fuck.desktop[fuck.ws].clients.items, 0..) |wn, i| {
+        attr.border_pixel = if (i == client) fuck.border_select.pixel else fuck.border_normal.pixel;
+        _ = c.XChangeWindowAttributes(fuck.display, wn.window, c.CWBorderPixel, &attr);
+    }
 }
 
 pub fn win_add(fuck: *Fuck, wn: c.Window) !void {
@@ -151,17 +163,19 @@ pub fn win_tile(fuck: *Fuck) void {
 }
 
 fn tile_monocle(fuck: *Fuck, ws: *const Desktop) void {
+    const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
     for (ws.clients.items) |wn| {
         if (wn.is_float) continue;
         _ = c.XMoveResizeWindow(fuck.display, wn.window,
-                config.GAPSIZE,
-                config.GAPSIZE + config.TOPGAP,
-                fuck.screen_w - config.GAPSIZE * 2,
-                fuck.screen_h - config.TOPGAP - config.GAPSIZE * 2);
+                config.GAP_SIZE,
+                config.GAP_SIZE + config.TOP_GAP,
+                fuck.screen_w - gap,
+                fuck.screen_h - config.TOP_GAP - gap);
     }
 }
 
 fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
+    const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
     const master_w = ws.master_w;
     const stack_w = fuck.screen_w - ws.master_w;
     var sz: u32 = 0;
@@ -183,27 +197,28 @@ fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
 
     var wn = ws.clients.items[master];
     _ = c.XMoveResizeWindow(fuck.display, wn.window,
-            config.GAPSIZE,
-            config.GAPSIZE + config.TOPGAP,
-            @as(u32, @intCast(master_w - config.GAPSIZE)),
-            fuck.screen_h - config.TOPGAP - config.GAPSIZE * 2);
+            config.GAP_SIZE,
+            config.GAP_SIZE + config.TOP_GAP,
+            @as(u32, @intCast(master_w - config.GAP_SIZE - config.BORDER_SIZE)),
+            fuck.screen_h - config.TOP_GAP - gap);
 
     var count: u32 = 0;
-    const h = (fuck.screen_h - config.TOPGAP - config.GAPSIZE) / (sz-1);
+    const h = (fuck.screen_h - config.TOP_GAP - config.GAP_SIZE) / (sz-1);
     for ((master+1)..ws.clients.items.len) |i| {
         wn = ws.clients.items[i];
         if (wn.is_float) continue;
 
         _ = c.XMoveResizeWindow(fuck.display, wn.window,
-                @as(i32, @intCast(master_w + config.GAPSIZE)),
-                @as(i32, @intCast(count * h + config.GAPSIZE + config.TOPGAP)),
-                @as(u32, @intCast(stack_w - config.GAPSIZE * 2)),
-                @as(u32, @intCast(h - config.GAPSIZE)));
+                @as(i32, @intCast(master_w + config.GAP_SIZE)),
+                @as(i32, @intCast(count * h + config.GAP_SIZE + config.TOP_GAP)),
+                @as(u32, @intCast(stack_w - gap)),
+                @as(u32, @intCast(h - (config.BORDER_SIZE*2) - config.GAP_SIZE)));
         count += 1;
     }
 }
 
 fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
+    const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
     const master_h = ws.master_h;
     const stack_h = fuck.screen_h - master_h;
     var sz: u32 = 0;
@@ -225,22 +240,22 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
 
     var wn = ws.clients.items[master];
     _ = c.XMoveResizeWindow(fuck.display, wn.window,
-            config.GAPSIZE,
-            config.GAPSIZE + config.TOPGAP,
-            fuck.screen_w - config.GAPSIZE * 2,
-            @as(u32, @intCast(master_h - config.TOPGAP)));
+            config.GAP_SIZE,
+            config.GAP_SIZE + config.TOP_GAP,
+            fuck.screen_w - gap,
+            @as(u32, @intCast(master_h - config.TOP_GAP)));
 
     var count: u32 = 0;
-    const w = (fuck.screen_w - config.GAPSIZE) / (sz-1);
+    const w = (fuck.screen_w - config.GAP_SIZE) / (sz-1);
     for ((master+1)..ws.clients.items.len) |i| {
         wn = ws.clients.items[i];
         if (wn.is_float) continue;
 
         _ = c.XMoveResizeWindow(fuck.display, wn.window,
-                @as(i32, @intCast(count * w + config.GAPSIZE)),
-                @as(i32, @intCast(master_h + config.GAPSIZE*2)),
-                @as(u32, @intCast(w - config.GAPSIZE)),
-                @as(u32, @intCast(stack_h - config.TOPGAP)));
+                @as(i32, @intCast(count * w + config.GAP_SIZE)),
+                @as(i32, @intCast(master_h + gap)),
+                @as(u32, @intCast(w - config.GAP_SIZE - config.BORDER_SIZE)),
+                @as(u32, @intCast(stack_h - config.TOP_GAP)));
         count += 1;
     }
 }

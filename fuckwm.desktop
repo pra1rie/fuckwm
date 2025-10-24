@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=fuckwm
+Exec=fuckwm
+Type=Application
+X-LightDM-DesktopName=fuckwm
+X-GNOME_WMName=fuckwm
+DesktopNames=fuckwm

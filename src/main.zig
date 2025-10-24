@@ -14,6 +14,8 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
         ws.clients.items[ws.cur].is_full = false;
 
     _ = c.XSelectInput(fuck.display, wn, c.StructureNotifyMask|c.EnterWindowMask);
+    _ = c.XSetWindowBorderWidth(fuck.display, wn, config.BORDER_SIZE);
+    _ = c.XSetWindowBorder(fuck.display, wn, fuck.border_normal.pixel);
     try fuckwm.win_add(fuck, wn);
     _ = c.XMapWindow(fuck.display, wn);
     fuckwm.win_focus(fuck, ws.clients.items.len - 1);
@@ -162,9 +164,7 @@ pub fn main() !void {
     defer fuck.deinit();
     _ = c.XSetErrorHandler(&xerror);
     _ = c.XSelectInput(fuck.display, fuck.root, c.SubstructureRedirectMask);
-    _ = c.XDefineCursor(fuck.display, fuck.root, c.XCreateFontCursor(fuck.display, 68));
     input_grab(&fuck);
-
     while (true) {
         _ = c.XNextEvent(fuck.display, &ev);
         handle_events(&fuck, &ev) catch {};
