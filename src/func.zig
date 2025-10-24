@@ -120,7 +120,7 @@ pub fn win_full(fuck: *fuckwm.Fuck, arg: Arg) !void {
     const cw = &ws.clients.items[ws.cur];
     cw.is_full = !cw.is_full;
     if (cw.is_full) {
-        _ = c.XMoveResizeWindow(fuck.display, cw.window, 0, 0, fuck.screen_w, fuck.screen_h);
+        _ = c.XMoveResizeWindow(fuck.display, cw.window, -config.BORDER_SIZE, -config.BORDER_SIZE, fuck.screen_w, fuck.screen_h);
     } else {
         _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
     }
