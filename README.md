@@ -3,7 +3,7 @@ pronounced (fuckum)
 i got frustrated that my wm wasn't working properly so i rewrote it in zig (bar not included)
 
 ## Building
-dependencies: zig 0.12.x, Xorg and libc
+dependencies: zig 0.13.x, Xorg and libc
 
 compile with:
 ```sh
