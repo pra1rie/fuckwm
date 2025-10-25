@@ -177,17 +177,17 @@ pub fn win_to_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {
 
 pub fn switch_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {
     if (arg.i == fuck.ws) return;
-    const cws = &fuck.desktop[fuck.ws];
-
-    for (cws.clients.items) |client| {
-        _ = c.XUnmapWindow(fuck.display, client.window);
-    }
-
+    const pws = &fuck.desktop[fuck.ws];
     fuck.ws = @as(u32, @intCast(arg.i));
     for (fuck.desktop[fuck.ws].clients.items) |client| {
         _ = c.XMapWindow(fuck.display, client.window);
     }
-
+    // there's some annoying flicker when switching workspaces
+    // so we unmap the previous workspace's windows after mapping
+    // the new windows instead of before.
+    for (pws.clients.items) |client| {
+        _ = c.XUnmapWindow(fuck.display, client.window);
+    }
     fuckwm.win_focus(fuck, fuck.desktop[fuck.ws].cur);
     fuckwm.win_tile(fuck);
 }
