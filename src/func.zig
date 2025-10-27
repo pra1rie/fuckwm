@@ -155,11 +155,12 @@ pub fn win_float(fuck: *fuckwm.Fuck, arg: Arg) !void {
 pub fn win_to_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {
     if (arg.i == fuck.ws) return;
     const cws = &fuck.desktop[fuck.ws];
+    if (cws.clients.items.len == 0) return;
     const ws = fuck.ws;
     const wn = cws.clients.items[cws.cur].window;
 
     _ = c.XUnmapWindow(fuck.display, wn);
-    try fuckwm.win_del(fuck, wn);
+    try fuckwm.win_del(fuck, cws.cur);
     if (fuck.desktop[fuck.ws].cur > 0) {
         fuck.desktop[fuck.ws].cur -= 1;
     } else {

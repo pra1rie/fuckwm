@@ -24,9 +24,8 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
 }
 
 fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    const cl = fuck.client_from_window(ev.*.xunmap.window);
-    if (cl == fuckwm.FuckError.NoClientForWindow) return;
-    try fuckwm.win_del(fuck, ev.*.xdestroywindow.window);
+    const cl = try fuck.client_from_window(ev.*.xdestroywindow.window);
+    try fuckwm.win_del(fuck, cl);
     if (fuck.desktop[fuck.ws].cur > 0) {
         fuck.desktop[fuck.ws].cur -= 1;
     } else {
@@ -40,9 +39,8 @@ fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
 }
 
 fn notify_unmap(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    const cl = fuck.client_from_window(ev.*.xunmap.window);
-    if (cl == fuckwm.FuckError.NoClientForWindow) return;
-    try fuckwm.win_del(fuck, ev.*.xunmap.window);
+    const cl = try fuck.client_from_window(ev.*.xunmap.window);
+    try fuckwm.win_del(fuck, cl);
     if (fuck.desktop[fuck.ws].cur > 0) {
         fuck.desktop[fuck.ws].cur -= 1;
     } else {
@@ -164,6 +162,7 @@ pub fn main() !void {
     defer fuck.deinit();
     _ = c.XSetErrorHandler(&xerror);
     _ = c.XSelectInput(fuck.display, fuck.root, c.SubstructureRedirectMask);
+    try func.run(&fuck, func.Arg{ .com = &config.STARTUP_COMMAND });
     input_grab(&fuck);
     while (true) {
         _ = c.XNextEvent(fuck.display, &ev);

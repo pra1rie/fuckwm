@@ -30,6 +30,7 @@ pub const FuckError = error {
     XOpenDisplayFail,
     NoClientForWindow,
     InvalidWindowSize,
+    IndexOutOfBounds,
 };
 
 pub const Fuck = struct {
@@ -140,16 +141,27 @@ pub fn win_add(fuck: *Fuck, wn: c.Window) !void {
     try fuck.desktop[fuck.ws].clients.append(client);
 }
 
-pub fn win_del(fuck: *Fuck, wn: c.Window) !void {
-    const client = try fuck.client_from_window(wn);
+pub fn win_del(fuck: *Fuck, id: u64) !void {
     const ws = &fuck.desktop[fuck.ws];
-    _ = ws.clients.orderedRemove(client);
+    if (id >= ws.clients.items.len) return FuckError.IndexOutOfBounds;
+    _ = ws.clients.orderedRemove(id);
 }
 
 pub fn win_tile(fuck: *Fuck) void {
     const ws = fuck.desktop[fuck.ws];
     if (ws.clients.items.len == 0) return;
     if (ws.clients.items[ws.cur].is_full) return;
+
+    // make sure to delete every "zombie" client so you don't get
+    // some weird transparent frames on your desktop with no content
+    var i: u64 = 0;
+    while (i < ws.clients.items.len) {
+        if (ws.clients.items[i].window == c.None) {
+            win_del(fuck, i) catch break;
+            i -= 1; // start next iteration from the same spot it just free'd
+        }
+        i += 1;
+    }
 
     const mode = if (ws.mode == Mode.float) ws.last_mode else ws.mode;
     switch (mode) {
