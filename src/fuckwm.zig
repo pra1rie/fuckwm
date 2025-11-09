@@ -258,7 +258,7 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
             @as(u32, @intCast(master_h - config.TOP_GAP)));
 
     var count: u32 = 0;
-    const w = (fuck.screen_w - config.GAP_SIZE) / (sz-1);
+    const w = (fuck.screen_w - config.GAP_SIZE - config.BORDER_SIZE) / (sz-1);
     for ((master+1)..ws.clients.items.len) |i| {
         wn = ws.clients.items[i];
         if (wn.is_float) continue;
