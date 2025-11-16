@@ -121,6 +121,7 @@ pub fn win_full(fuck: *fuckwm.Fuck, arg: Arg) !void {
     cw.is_full = !cw.is_full;
     if (cw.is_full) {
         _ = c.XMoveResizeWindow(fuck.display, cw.window, -config.BORDER_SIZE, -config.BORDER_SIZE, fuck.screen_w, fuck.screen_h);
+        _ = c.XRaiseWindow(fuck.display, cw.window);
     } else {
         _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
     }
