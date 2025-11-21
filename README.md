@@ -16,19 +16,6 @@ $ make
 $ make install
 ```
 
-add this to /usr/share/xsessions/fuckwm.desktop:
-```config
-[Desktop Entry]
-Encoding=UTF-8
-Name=fuckwm
-Exec=fuckwm
-Type=Application
-X-LightDM-DesktopName=fuckwm
-X-GNOME_WMName=fuckwm
-DesktopNames=fuckwm
-```
-
 ## Images
 because of course i need to show it off
-![sample_0](https://i.imgur.com/g21ayWY.png)
-![sample_1](https://i.imgur.com/4Ur53EE.png)
+![sample_0](https://i.imgur.com/dfakphi.png)
