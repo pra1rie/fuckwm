@@ -115,12 +115,18 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
     const cc = fuck.desktop[fuck.ws].clients.items[client];
     _ = c.XSetInputFocus(fuck.display, cc.window, c.RevertToParent, c.CurrentTime);
     _ = c.XRaiseWindow(fuck.display, cc.window);
-    fuck.desktop[fuck.ws].cur = client;
+    if (cc.is_float) {
+        win_del(fuck, client) catch return; // Uh oh.
+        fuck.desktop[fuck.ws].clients.append(cc) catch return; // Uh oh x2.
+        fuck.desktop[fuck.ws].cur = fuck.desktop[fuck.ws].clients.items.len-1; // Yucky.
+    } else {
+        fuck.desktop[fuck.ws].cur = client;
+    }
     win_tile(fuck);
-
+    const cur = fuck.desktop[fuck.ws].cur;
     var attr: c.XSetWindowAttributes = undefined;
     for (fuck.desktop[fuck.ws].clients.items, 0..) |wn, i| {
-        attr.border_pixel = if (i == client) fuck.border_select.pixel else fuck.border_normal.pixel;
+        attr.border_pixel = if (i == cur) fuck.border_select.pixel else fuck.border_normal.pixel;
         _ = c.XChangeWindowAttributes(fuck.display, wn.window, c.CWBorderPixel, &attr);
     }
 }
