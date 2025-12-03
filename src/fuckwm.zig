@@ -279,7 +279,6 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
 }
 
 fn tile_float(fuck: *Fuck, ws: *const Desktop) void {
-    // TODO: if i focus a tiled window, last focused window should remain on top
     for (ws.clients.items) |wn| {
         if (!wn.is_float) continue;
         _ = c.XRaiseWindow(fuck.display, wn.window);
