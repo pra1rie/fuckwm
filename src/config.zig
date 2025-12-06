@@ -11,7 +11,7 @@ pub const BORDER_NORMAL = "#121212";
 pub const BORDER_SELECT = "#ff5faf";
 pub const STARTUP_COMMAND = [_][*c]const u8{ "path/to/some/init/script", 0 };
 
-const term_cmd = [_][*c]const u8{ "kitty", 0 };
+const term_cmd = [_][*c]const u8{ "fterm", 0 };
 const menu_cmd = [_][*c]const u8{ "dmenu_run", 0 };
 
 pub const keys = [_]func.Key{
