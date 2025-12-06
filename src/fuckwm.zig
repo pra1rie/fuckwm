@@ -60,7 +60,6 @@ pub const Fuck = struct {
         _ = c.XAllocNamedColor(f.display, c.DefaultColormap(f.display, s), config.BORDER_NORMAL, &f.border_normal, &f.border_normal);
         _ = c.XAllocNamedColor(f.display, c.DefaultColormap(f.display, s), config.BORDER_SELECT, &f.border_select, &f.border_select);
 
-
         for (0..10) |i| {
             f.desktop[i] = Desktop{
                 .clients = ArrayList(Client).init(page_alloc),
@@ -114,7 +113,6 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
     if (fuck.desktop[fuck.ws].clients.items.len == 0) return;
     const cc = fuck.desktop[fuck.ws].clients.items[client];
     _ = c.XSetInputFocus(fuck.display, cc.window, c.RevertToParent, c.CurrentTime);
-    _ = c.XRaiseWindow(fuck.display, cc.window);
     fuck.desktop[fuck.ws].cur = client;
     win_tile(fuck);
 
@@ -186,23 +184,27 @@ fn tile_monocle(fuck: *Fuck, ws: *const Desktop) void {
     }
 }
 
-fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
-    const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
-    const master_w = ws.master_w;
-    const stack_w = fuck.screen_w - ws.master_w;
-    var sz: u32 = 0;
+fn get_master_client(ws: *const Desktop) [2]u32 {
     var master: u32 = 0;
-
+    var stack_sz: u32 = 0;
     for (ws.clients.items, 0..) |wn, i| {
         if (!wn.is_float) {
             if (master == 0 and ws.clients.items[master].is_float)
                 master = @as(u32, @intCast(i));
-            sz += 1;
+            stack_sz += 1;
         }
     }
+    return .{ master, stack_sz };
+}
+
+fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
+    const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
+    const master_w = ws.master_w;
+    const stack_w = fuck.screen_w - ws.master_w;
+    const master, const stack_sz = get_master_client(ws);
 
     // only one tiled client
-    if (ws.clients.items.len == 1 or sz <= 1) {
+    if (ws.clients.items.len == 1 or stack_sz <= 1) {
         tile_monocle(fuck, ws);
         return;
     }
@@ -215,7 +217,7 @@ fn tile_master_stack(fuck: *Fuck, ws: *const Desktop) void {
             fuck.screen_h - config.TOP_GAP - gap);
 
     var count: u32 = 0;
-    const h = (fuck.screen_h - config.TOP_GAP - config.GAP_SIZE) / (sz-1);
+    const h = (fuck.screen_h - config.TOP_GAP - config.GAP_SIZE) / (stack_sz-1);
     for ((master+1)..ws.clients.items.len) |i| {
         wn = ws.clients.items[i];
         if (wn.is_float) continue;
@@ -233,19 +235,10 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
     const gap = (config.GAP_SIZE+config.BORDER_SIZE)*2;
     const master_h = ws.master_h;
     const stack_h = fuck.screen_h - master_h;
-    var sz: u32 = 0;
-    var master: u32 = 0;
-
-    for (ws.clients.items, 0..) |wn, i| {
-        if (!wn.is_float) {
-            if (master == 0 and ws.clients.items[master].is_float)
-                master = @as(u32, @intCast(i));
-            sz += 1;
-        }
-    }
+    const master, const stack_sz = get_master_client(ws);
 
     // only one tiled client
-    if (ws.clients.items.len == 1 or sz <= 1) {
+    if (ws.clients.items.len == 1 or stack_sz <= 1) {
         tile_monocle(fuck, ws);
         return;
     }
@@ -258,7 +251,7 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
             @as(u32, @intCast(master_h - config.TOP_GAP)));
 
     var count: u32 = 0;
-    const w = (fuck.screen_w - config.GAP_SIZE - config.BORDER_SIZE) / (sz-1);
+    const w = (fuck.screen_w - config.GAP_SIZE - config.BORDER_SIZE) / (stack_sz-1);
     for ((master+1)..ws.clients.items.len) |i| {
         wn = ws.clients.items[i];
         if (wn.is_float) continue;
@@ -273,10 +266,6 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
 }
 
 fn tile_float(fuck: *Fuck, ws: *const Desktop) void {
-    for (ws.clients.items) |wn| {
-        if (!wn.is_float) continue;
-        _ = c.XRaiseWindow(fuck.display, wn.window);
-    }
     // make sure focused window is on top
     if (ws.clients.items[ws.cur].is_float)
         _ = c.XRaiseWindow(fuck.display, ws.clients.items[ws.cur].window);

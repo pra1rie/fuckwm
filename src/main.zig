@@ -20,6 +20,7 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     _ = c.XMapWindow(fuck.display, wn);
     fuckwm.win_focus(fuck, ws.clients.items.len - 1);
     try func.win_center(fuck, .{});
+    _ = c.XLowerWindow(fuck.display, wn);
     fuckwm.win_tile(fuck);
 }
 
@@ -58,8 +59,6 @@ fn button_press(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     if (wn == c.None) return;
     const client = try fuck.client_from_window(wn);
     try fuck.desktop[fuck.ws].clients.items[client].get_size(fuck);
-
-    _ = c.XRaiseWindow(fuck.display, wn);
     fuckwm.win_focus(fuck, client);
     fuck.mouse = ev.*.xbutton;
     _ = c.XGetWindowAttributes(fuck.display, wn, &fuck.hover_attr);

@@ -124,6 +124,7 @@ pub fn win_full(fuck: *fuckwm.Fuck, arg: Arg) !void {
         _ = c.XRaiseWindow(fuck.display, cw.window);
     } else {
         _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
+        _ = c.XLowerWindow(fuck.display, cw.window);
     }
     fuckwm.win_tile(fuck);
 }
