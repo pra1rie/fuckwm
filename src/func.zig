@@ -152,7 +152,7 @@ pub fn win_float(fuck: *fuckwm.Fuck, arg: Arg) !void {
     cw.is_float = !cw.is_float;
     _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
     _ = c.XLowerWindow(fuck.display, cw.window);
-    fuckwm.win_tile(fuck);
+    fuckwm.win_focus(fuck, ws.cur);
 }
 
 pub fn win_to_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {

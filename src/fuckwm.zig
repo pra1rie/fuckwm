@@ -23,6 +23,7 @@ pub const Desktop = struct {
     last_mode: Mode = config.MODE,
     master_w: u32,
     master_h: u32,
+    prev: u64,
     cur: u64,
 };
 
@@ -65,6 +66,7 @@ pub const Fuck = struct {
                 .clients = ArrayList(Client).init(page_alloc),
                 .master_w = f.screen_w / 2,
                 .master_h = f.screen_h / 2,
+                .prev = 0,
                 .cur = 0,
             };
         }
@@ -110,17 +112,25 @@ pub const Client = struct {
 };
 
 pub fn win_focus(fuck: *Fuck, client: u64) void {
-    if (fuck.desktop[fuck.ws].clients.items.len == 0) return;
-    const cc = fuck.desktop[fuck.ws].clients.items[client];
+    var ws = &fuck.desktop[fuck.ws];
+    if (ws.clients.items.len == 0) return;
+    if (!ws.clients.items[ws.cur].is_float) ws.prev = ws.cur;
+    const cc = ws.clients.items[client];
     _ = c.XSetInputFocus(fuck.display, cc.window, c.RevertToParent, c.CurrentTime);
-    fuck.desktop[fuck.ws].cur = client;
-    win_tile(fuck);
+    ws.cur = client;
 
     var attr: c.XSetWindowAttributes = undefined;
-    for (fuck.desktop[fuck.ws].clients.items, 0..) |wn, i| {
-        attr.border_pixel = if (i == client) fuck.border_select.pixel else fuck.border_normal.pixel;
+    var i = ws.clients.items.len;
+    while (i > 0) {
+        i -= 1;
+        const wn = ws.clients.items[i];
+        attr.border_pixel = if (i == ws.cur) fuck.border_select.pixel else fuck.border_normal.pixel;
         _ = c.XChangeWindowAttributes(fuck.display, wn.window, c.CWBorderPixel, &attr);
+        if (i != ws.cur and i != ws.prev and !wn.is_float)
+            _ = c.XLowerWindow(fuck.display, wn.window);
     }
+
+    win_tile(fuck);
 }
 
 pub fn win_add(fuck: *Fuck, wn: c.Window) !void {
