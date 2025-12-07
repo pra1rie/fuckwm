@@ -20,7 +20,6 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     _ = c.XMapWindow(fuck.display, wn);
     fuckwm.win_focus(fuck, ws.clients.items.len - 1);
     try func.win_center(fuck, .{});
-    _ = c.XLowerWindow(fuck.display, wn);
     fuckwm.win_tile(fuck);
 }
 
