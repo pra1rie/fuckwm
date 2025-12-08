@@ -23,34 +23,29 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     fuckwm.win_tile(fuck);
 }
 
-fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    const cl = try fuck.client_from_window(ev.*.xdestroywindow.window);
+fn unmap_destroy_window(fuck: *fuckwm.Fuck, wn: c.Window) !void {
+    var ws = &fuck.desktop[fuck.ws];
+    const cl = try fuck.client_from_window(wn);
     try fuckwm.win_del(fuck, cl);
-    if (fuck.desktop[fuck.ws].cur > 0) {
-        fuck.desktop[fuck.ws].cur -= 1;
-    } else {
-        fuck.desktop[fuck.ws].cur = 0;
-    }
+    ws.cur = if (ws.cur > 0) ws.cur-1 else 0;
     _ = c.XSetInputFocus(fuck.display, fuck.root, c.RevertToParent, c.CurrentTime);
-    if (fuck.desktop[fuck.ws].clients.items.len > 0) {
-        fuckwm.win_focus(fuck, fuck.desktop[fuck.ws].cur);
+    if (ws.clients.items.len > 0) {
+        if (ws.prev < ws.clients.items.len) {
+            fuckwm.win_focus(fuck, ws.prev);
+            ws.prev = ws.clients.items.len;
+        } else {
+            fuckwm.win_focus(fuck, ws.cur);
+        }
         fuckwm.win_tile(fuck);
     }
 }
 
+fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
+    try unmap_destroy_window(fuck, ev.*.xdestroywindow.window);
+}
+
 fn notify_unmap(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    const cl = try fuck.client_from_window(ev.*.xunmap.window);
-    try fuckwm.win_del(fuck, cl);
-    if (fuck.desktop[fuck.ws].cur > 0) {
-        fuck.desktop[fuck.ws].cur -= 1;
-    } else {
-        fuck.desktop[fuck.ws].cur = 0;
-    }
-    _ = c.XSetInputFocus(fuck.display, fuck.root, c.RevertToParent, c.CurrentTime);
-    if (fuck.desktop[fuck.ws].clients.items.len > 0) {
-        fuckwm.win_focus(fuck, fuck.desktop[fuck.ws].cur);
-        fuckwm.win_tile(fuck);
-    }
+    try unmap_destroy_window(fuck, ev.*.xunmap.window);
 }
 
 fn button_press(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
