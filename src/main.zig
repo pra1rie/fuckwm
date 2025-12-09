@@ -30,7 +30,8 @@ fn unmap_destroy_window(fuck: *fuckwm.Fuck, wn: c.Window) !void {
     ws.cur = if (ws.cur > 0) ws.cur-1 else 0;
     _ = c.XSetInputFocus(fuck.display, fuck.root, c.RevertToParent, c.CurrentTime);
     if (ws.clients.items.len > 0) {
-        if (ws.prev < ws.clients.items.len) {
+        // TODO: maybe i should explicitly search for and focus the previous floating window?
+        if (ws.prev < ws.clients.items.len and !ws.clients.items[ws.cur].is_float) {
             fuckwm.win_focus(fuck, ws.prev);
             ws.prev = ws.clients.items.len;
         } else {
