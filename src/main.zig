@@ -18,7 +18,10 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     _ = c.XSetWindowBorder(fuck.display, wn, fuck.border_normal.pixel);
     try fuckwm.win_add(fuck, wn);
     _ = c.XMapWindow(fuck.display, wn);
-    fuckwm.win_focus(fuck, ws.clients.items.len - 1);
+    // lower window below floating windows and set ws.cur so it gets focused properly (hacky? hacky!)
+    _ = c.XLowerWindow(fuck.display, wn);
+    ws.cur = ws.clients.items.len - 1;
+    fuckwm.win_focus(fuck, ws.cur);
     try func.win_center(fuck, .{});
     fuckwm.win_tile(fuck);
 }

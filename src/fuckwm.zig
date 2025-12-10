@@ -136,8 +136,7 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
 pub fn win_add(fuck: *Fuck, wn: c.Window) !void {
     if (wn == c.None) return;
     // Do not add client if it already exists
-    const window_dup = fuck.client_from_window(wn);
-    if (window_dup != FuckError.NoClientForWindow)
+    if (fuck.client_from_window(wn) != FuckError.NoClientForWindow)
         return;
 
     var client = Client{
