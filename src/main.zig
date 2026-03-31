@@ -20,8 +20,7 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     _ = c.XMapWindow(fuck.display, wn);
     // lower window below floating windows and set ws.cur so it gets focused properly (hacky? hacky!)
     _ = c.XLowerWindow(fuck.display, wn);
-    ws.cur = ws.clients.items.len - 1;
-    fuckwm.win_focus(fuck, ws.cur);
+    fuckwm.win_focus(fuck, ws.clients.items.len - 1);
     try func.win_center(fuck, .{});
     fuckwm.win_tile(fuck);
 }
@@ -45,7 +44,14 @@ fn unmap_destroy_window(fuck: *fuckwm.Fuck, wn: c.Window) !void {
 }
 
 fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    try unmap_destroy_window(fuck, ev.*.xdestroywindow.window);
+    const cur_ws = fuck.ws;
+    // 'notify_destroy' will hunt and kill the window in any workspace
+    for (0..10) |ws| {
+        fuck.ws = @intCast(ws);
+        unmap_destroy_window(fuck, ev.*.xdestroywindow.window) catch continue;
+    }
+    fuck.ws = cur_ws;
+    fuckwm.win_tile(fuck);
 }
 
 fn notify_unmap(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
@@ -56,7 +62,8 @@ fn button_press(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     const wn = ev.*.xbutton.subwindow;
     if (wn == c.None) return;
     const client = try fuck.client_from_window(wn);
-    try fuck.desktop[fuck.ws].clients.items[client].get_size(fuck);
+    if (fuck.desktop[fuck.ws].clients.items[client].is_float)
+        try fuck.desktop[fuck.ws].clients.items[client].get_size(fuck);
     fuckwm.win_focus(fuck, client);
     fuck.mouse = ev.*.xbutton;
     _ = c.XGetWindowAttributes(fuck.display, wn, &fuck.hover_attr);
