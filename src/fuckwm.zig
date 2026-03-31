@@ -116,6 +116,7 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
     if (ws.clients.items.len == 0) return;
     if (!ws.clients.items[ws.cur].is_float) ws.prev = ws.cur;
     const cc = ws.clients.items[client];
+    if (cc.is_float) _ = c.XRaiseWindow(fuck.display, cc.window);
     _ = c.XSetInputFocus(fuck.display, cc.window, c.RevertToParent, c.CurrentTime);
     ws.cur = client;
 
@@ -177,8 +178,6 @@ pub fn win_tile(fuck: *Fuck) void {
         Mode.bottom_stack => tile_bottom_stack(fuck, &ws),
         else => {},
     }
-
-    tile_float(fuck, &ws);
 }
 
 fn tile_monocle(fuck: *Fuck, ws: *const Desktop) void {
@@ -272,11 +271,5 @@ fn tile_bottom_stack(fuck: *Fuck, ws: *const Desktop) void {
                 @as(u32, @intCast(stack_h - config.GAP_SIZE - config.BORDER_SIZE - config.TOP_GAP)));
         count += 1;
     }
-}
-
-fn tile_float(fuck: *Fuck, ws: *const Desktop) void {
-    // make sure focused window is on top
-    if (ws.clients.items[ws.cur].is_float)
-        _ = c.XRaiseWindow(fuck.display, ws.clients.items[ws.cur].window);
 }
 

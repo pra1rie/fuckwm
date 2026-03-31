@@ -135,13 +135,13 @@ pub fn win_center(fuck: *fuckwm.Fuck, arg: Arg) !void {
     const ws = &fuck.desktop[fuck.ws];
     if (ws.clients.items.len == 0) return;
     var cw = &ws.clients.items[ws.cur];
-    if (cw.is_full) return;
 
+    if (cw.is_float) try cw.get_size(fuck);
     cw.x = @as(i32, @intCast((fuck.screen_w / 2) - (cw.w / 2) - config.BORDER_SIZE));
     cw.y = @as(i32, @intCast(((fuck.screen_h+config.TOP_GAP) / 2) - (cw.h / 2) - config.BORDER_SIZE));
 
+    if (cw.is_full) return;
     _ = c.XMoveResizeWindow(fuck.display, cw.window, cw.x, cw.y, cw.w, cw.h);
-    try cw.get_size(fuck);
     fuckwm.win_tile(fuck);
 }
 

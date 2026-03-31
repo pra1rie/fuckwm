@@ -79,6 +79,7 @@ fn notify_motion(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
     const cw = &fuck.desktop[fuck.ws];
     var cc = &cw.clients.items[client];
     if (cc.is_full) return;
+    _ = c.XRaiseWindow(fuck.display, cc.window);
     cc.is_float = true;
 
     const ha = fuck.hover_attr;
