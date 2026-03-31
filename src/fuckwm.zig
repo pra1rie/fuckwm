@@ -116,6 +116,8 @@ pub fn win_focus(fuck: *Fuck, client: u64) void {
     if (ws.clients.items.len == 0) return;
     if (!ws.clients.items[ws.cur].is_float) ws.prev = ws.cur;
     const cc = ws.clients.items[client];
+    if (!ws.clients.items[ws.cur].is_float)
+        _ = c.XLowerWindow(fuck.display, ws.clients.items[ws.cur].window);
     if (cc.is_float) _ = c.XRaiseWindow(fuck.display, cc.window);
     _ = c.XSetInputFocus(fuck.display, cc.window, c.RevertToParent, c.CurrentTime);
     ws.cur = client;
