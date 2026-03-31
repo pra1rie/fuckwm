@@ -26,31 +26,32 @@ fn map_request(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
 }
 
 fn unmap_destroy_window(fuck: *fuckwm.Fuck, wn: c.Window) !void {
-    const cur_ws = fuck.ws;
-    for (0..10) |i| {
-        // 'unmap_destroy_window' will hunt and kill the window from any workspace
-        fuck.ws = @intCast(i);
-        var ws = fuck.desktop[fuck.ws];
-        const cl = fuck.client_from_window(wn) catch continue;
-        try fuckwm.win_del(fuck, cl);
-        ws.cur = if (ws.cur > 0) ws.cur-1 else 0;
-        _ = c.XSetInputFocus(fuck.display, fuck.root, c.RevertToParent, c.CurrentTime);
-        if (ws.clients.items.len > 0) {
-            // TODO: maybe i should explicitly search for and focus the previous floating window?
-            if (ws.prev < ws.clients.items.len and !ws.clients.items[ws.cur].is_float) {
-                fuckwm.win_focus(fuck, ws.prev);
-                ws.prev = ws.clients.items.len;
-            } else {
-                fuckwm.win_focus(fuck, ws.cur);
-            }
+    var ws = &fuck.desktop[fuck.ws];
+    const cl = try fuck.client_from_window(wn);
+    try fuckwm.win_del(fuck, cl);
+    ws.cur = if (ws.cur > 0) ws.cur-1 else 0;
+    _ = c.XSetInputFocus(fuck.display, fuck.root, c.RevertToParent, c.CurrentTime);
+    if (ws.clients.items.len > 0) {
+        // TODO: maybe i should explicitly search for and focus the previous floating window?
+        if (ws.prev < ws.clients.items.len and !ws.clients.items[ws.cur].is_float) {
+            fuckwm.win_focus(fuck, ws.prev);
+            ws.prev = ws.clients.items.len;
+        } else {
+            fuckwm.win_focus(fuck, ws.cur);
         }
+        fuckwm.win_tile(fuck);
     }
-    fuck.ws = cur_ws;
-    fuckwm.win_tile(fuck);
 }
 
 fn notify_destroy(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
-    try unmap_destroy_window(fuck, ev.*.xdestroywindow.window);
+    const cur_ws = fuck.ws;
+    // 'notify_destroy' will hunt and kill the window in any workspace
+    for (0..10) |ws| {
+        fuck.ws = @intCast(ws);
+        unmap_destroy_window(fuck, ev.*.xdestroywindow.window) catch continue;
+    }
+    fuck.ws = cur_ws;
+    fuckwm.win_tile(fuck);
 }
 
 fn notify_unmap(fuck: *fuckwm.Fuck, ev: *c.XEvent) !void {
