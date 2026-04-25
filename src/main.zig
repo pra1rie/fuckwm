@@ -1,8 +1,8 @@
-const std = @import("std");
-const c = @import("c.zig");
+const c = @import("c.zig").c;
 const fuckwm = @import("fuckwm.zig");
 const config = @import("config.zig");
 const func = @import("func.zig");
+const std = @import("std");
 
 // TODO: (maybe) parse a config file or whatever
 

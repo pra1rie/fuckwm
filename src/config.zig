@@ -1,4 +1,4 @@
-const c = @import("c.zig");
+const c = @import("c.zig").c;
 const fuckwm = @import("fuckwm.zig");
 const func = @import("func.zig");
 

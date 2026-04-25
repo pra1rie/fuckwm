@@ -1,7 +1,7 @@
-const std = @import("std");
-const c = @import("c.zig");
+const c = @import("c.zig").c;
 const fuckwm = @import("fuckwm.zig");
 const config = @import("config.zig");
+const std = @import("std");
 
 pub const Arg = struct {
     com: [*c]const [*c]const u8 = undefined,
@@ -162,7 +162,8 @@ pub fn win_to_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {
     const cws = &fuck.desktop[fuck.ws];
     if (cws.clients.items.len == 0) return;
     const ws = fuck.ws;
-    const wn = cws.clients.items[cws.cur].window;
+    const client = cws.clients.items[cws.cur];
+    const wn = client.window;
 
     _ = c.XUnmapWindow(fuck.display, wn);
     try fuckwm.win_del(fuck, cws.cur);
@@ -177,6 +178,10 @@ pub fn win_to_ws(fuck: *fuckwm.Fuck, arg: Arg) !void {
 
     fuck.ws = @as(u32, @intCast(arg.i));
     try fuckwm.win_add(fuck, wn);
+    // what the fuck i didn't think this would just work
+    var list = &fuck.desktop[fuck.ws].clients;
+    list.items[list.items.len-1] = client;
+    fuckwm.win_focus(fuck, list.items.len-1);
     fuck.ws = ws;
     fuckwm.win_tile(fuck);
 }

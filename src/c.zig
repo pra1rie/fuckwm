@@ -1,4 +1,4 @@
-pub usingnamespace @cImport({
+pub const c = @cImport({
     @cInclude("X11/Xlib.h");
     @cInclude("X11/XF86keysym.h");
     @cInclude("X11/keysym.h");

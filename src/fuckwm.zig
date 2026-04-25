@@ -1,6 +1,6 @@
-const std = @import("std");
-const c = @import("c.zig");
+const c = @import("c.zig").c;
 const config = @import("config.zig");
+const std = @import("std");
 
 pub const ChildProcess = std.ChildProcess;
 pub const ArrayList = std.ArrayList;
