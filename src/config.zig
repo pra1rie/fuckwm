@@ -9,14 +9,14 @@ pub const GAP_SIZE = 8;
 pub const BORDER_SIZE = 3;
 pub const BORDER_NORMAL = "#121212";
 pub const BORDER_SELECT = "#ff5faf";
-pub const STARTUP_COMMAND = [_][*c]const u8{ "path/to/some/init/script", 0 };
+pub const STARTUP_COMMAND = "path/to/some/init/script";
 
-const term_cmd = [_][*c]const u8{ "fterm", 0 };
-const menu_cmd = [_][*c]const u8{ "dmenu_run", 0 };
+const term_cmd = "fterm";
+const menu_cmd = "dmenu_run";
 
 pub const keys = [_]func.Key{
-    func.Key{ .mod = MOD,               .key = c.XK_Return, .fun = func.run,             .arg = func.Arg{ .com = &term_cmd } },
-    func.Key{ .mod = MOD,               .key = c.XK_d,      .fun = func.run,             .arg = func.Arg{ .com = &menu_cmd } },
+    func.Key{ .mod = MOD,               .key = c.XK_Return, .fun = func.run,             .arg = func.Arg{ .com = term_cmd } },
+    func.Key{ .mod = MOD,               .key = c.XK_d,      .fun = func.run,             .arg = func.Arg{ .com = menu_cmd } },
 
     func.Key{ .mod = MOD,               .key = c.XK_f,      .fun = func.win_full,        .arg = func.Arg{ .i = 0 } },
     func.Key{ .mod = MOD,               .key = c.XK_q,      .fun = func.win_kill,        .arg = func.Arg{ .i = 0 } },

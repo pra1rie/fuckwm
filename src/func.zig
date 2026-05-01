@@ -4,7 +4,7 @@ const config = @import("config.zig");
 const std = @import("std");
 
 pub const Arg = struct {
-    com: [*c]const [*c]const u8 = undefined,
+    com: [*c]const u8 = undefined,
     i: i32 = 0,
     m: fuckwm.Mode = config.MODE,
 };
@@ -17,12 +17,12 @@ pub const Key = struct {
 };
 
 pub fn run(fuck: *fuckwm.Fuck, arg: Arg) !void {
-    if (c.fork() != 0) return;
-    if (fuck.display != null) {
-        _ = c.close(c.ConnectionNumber(fuck.display));
-    }
-    _ = c.setsid();
-    _ = c.execvp(arg.com[0], @ptrCast(arg.com));
+    _ = fuck;
+    const len = c.strlen(arg.com);
+    const cmd = try fuckwm.page_alloc.alloc(u8, len+3);
+    defer fuckwm.page_alloc.free(cmd);
+    _ = c.snprintf(@ptrCast(cmd), len+3, "%s &", arg.com);
+    _ = c.system(@ptrCast(cmd));
 }
 
 pub fn tile_mode(fuck: *fuckwm.Fuck, arg: Arg) !void {

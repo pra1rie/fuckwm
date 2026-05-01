@@ -6,5 +6,7 @@ pub const c = @cImport({
     @cInclude("signal.h");
     @cInclude("unistd.h");
     @cInclude("stdlib.h");
+    @cInclude("string.h");
+    @cInclude("stdio.h");
 });
 

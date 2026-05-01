@@ -167,7 +167,7 @@ pub fn main() !void {
     defer fuck.deinit();
     _ = c.XSetErrorHandler(&xerror);
     _ = c.XSelectInput(fuck.display, fuck.root, c.SubstructureRedirectMask);
-    try func.run(&fuck, func.Arg{ .com = &config.STARTUP_COMMAND });
+    try func.run(&fuck, func.Arg{ .com = config.STARTUP_COMMAND });
     input_grab(&fuck);
     while (true) {
         _ = c.XNextEvent(fuck.display, &ev);
